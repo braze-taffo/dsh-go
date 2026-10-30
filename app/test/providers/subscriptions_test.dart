@@ -134,6 +134,7 @@ void main() {
               // The bridge's own route: shown as the subscription, not again.
               ProviderProfile(route: 'openai-codex', displayName: 'ChatGPT'),
             ],
+            displayNameOnlyRoutes: const {'openai-codex'},
             credentials: const {'CUSTOM_MYGW_API_KEY': 'k'},
           ),
           subscriptions: bridge,
@@ -410,6 +411,7 @@ void main() {
       await tester.tap(find.text('退出登录'));
       await settle(tester);
       expect(find.text('退出 ChatGPT？'), findsOneWidget);
+      expect(find.text(appL10n.engineSubscriptionSignOutBody), findsNothing);
       await tester.tap(find.text('取消'));
       await settle(tester);
       expect(bridge.calls, isNot(contains('signOut:openai-codex')));

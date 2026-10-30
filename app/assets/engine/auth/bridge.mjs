@@ -15,8 +15,8 @@
 //                       (answer() replies to a pending paste prompt)
 //
 // After a successful sign-in it declares the catalog route
-// (`llm-pi-ai.providers.<id>`) so the provider's models show up; sign-out removes
-// the route and deletes the grant. Token refresh stays with pi-ai, per request.
+// (`llm-pi-ai.providers.<id>`) so the provider's models show up; sign-out deletes
+// only the grant, preserving route configuration. Token refresh stays with pi-ai.
 //
 // This file has no imports from DSH: `index.mjs` wires it into the host, and the
 // tests drive it with a fake context.
@@ -355,7 +355,7 @@ export class AuthBridge {
     return {}
   }
 
-  /** `appAuth/signOut`: removes the route (when the bridge owns it) and deletes the grant. */
+  /** `appAuth/signOut`: deletes the grant, keeping the route and its settings. */
   async signOut(provider) {
     this.#spec(provider)
     const live = this.#liveByProvider.get(provider)
@@ -366,9 +366,6 @@ export class AuthBridge {
     }
     try {
       await this.#serialized(async () => {
-        // Route first: a grant without a route is repaired by list(); a route
-        // without a grant would offer models that cannot answer.
-        await this.#removeRoute(provider)
         const credentials = this.#get('credentials')
         if (credentials === undefined) throw new Error('credentials service is absent')
         const key = recordKeyFor(provider)
@@ -566,21 +563,5 @@ export class AuthBridge {
     ])
     this.#log(`${provider}: route declared`)
     return true
-  }
-
-  /**
-   * Removes `providers.<id>` when it is the bridge's: in the user layer and
-   * without `apiKeyEnv` (a route with a key reference is the user's API-key
-   * route and keeps working without the grant).
-   */
-  async #removeRoute(provider) {
-    const { settings, section } = this.#section()
-    if (!isObject(section.value?.providers?.[provider])) return 'absent'
-    const own = section.user?.providers?.[provider]
-    if (!isObject(own)) return 'inherited'
-    if (typeof own.apiKeyEnv === 'string' && own.apiKeyEnv.length > 0) return 'api-key'
-    await settings.mutate(this.#settingsNs, [{ op: 'unset', path: ['providers', provider] }])
-    this.#log(`${provider}: route removed`)
-    return 'removed'
   }
 }

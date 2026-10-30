@@ -7,7 +7,7 @@
 //   - begin → poll reaches `open` with the real authorize URL and pi-ai's
 //     callback server listening (ChatGPT 1455, Claude 53692), then cancel;
 //   - a seeded fake grant (no real account) → list repairs the route and the
-//     provider's models appear → signOut removes route and grant.
+//     provider's models appear → signOut deletes the grant and keeps settings.
 // No login is completed and nothing is sent to OpenAI or Anthropic.
 //
 //   node app/tool/engine_auth/smoke-real-dsh.mjs [--dsh <install dir>] [--work <empty dir>] [--port <n>]
@@ -153,7 +153,7 @@ try {
   const group = catalog.groups.find((g) => (g.provider ?? g.id) === 'openai-codex')
   check((group?.models?.length ?? 0) > 0, `ChatGPT models in the catalog: ${(group?.models ?? []).map((m) => m.model ?? m.id).join(', ')}`)
   await value('appAuth/signOut', { provider: 'openai-codex' })
-  check((await piAi()).value.providers?.['openai-codex'] === undefined, 'signOut removed the route')
+  check((await piAi()).user?.providers?.['openai-codex']?.displayName === 'ChatGPT', 'signOut preserved the route')
   check(!readFileSync(credentialsFile, 'utf8').includes('llm-pi-ai/openai-codex'), 'signOut deleted the grant')
   check((await value('appAuth/list')).providers[0].signedIn === false, 'list reads signed out')
 } catch (error) {

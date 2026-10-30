@@ -21,7 +21,7 @@ Typing `/model` in the composer opens it too.
 Providers come in three groups:
 
 - **Official**: DeepSeek. Tap it to open your account, where you sign in or enter an API key. On a remote host, this only shows whether that host is set up; configure it on that host.
-- **Subscriptions**: shown when the engine supports them and is connected. Tap **Sign in** and follow the steps in your browser. Open a signed-in subscription to see its models or **Sign out**, which removes its models from the model list.
+- **Subscriptions**: shown when the engine supports them and is connected. Tap **Sign in** and follow the steps in your browser. Open a signed-in subscription to see its models or **Sign out**, which clears authorization and keeps the provider settings.
 - **Custom**: providers you add, plus ones configured in DSH Web or the engine's config file. Connect to the engine to add one.
 
 ## Add a custom provider
