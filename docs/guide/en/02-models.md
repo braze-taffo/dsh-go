@@ -1,6 +1,6 @@
 # Models and providers
 
-Use a DeepSeek account or API key, or connect any OpenAI- or Anthropic-compatible service. When the engine supports it, you can also sign in with a ChatGPT or Claude subscription. For models in custom providers, set the context, image input and thinking levels yourself.
+Use a DeepSeek account or API key, or connect any OpenAI- or Anthropic-compatible service. When the engine supports it, you can also sign in with a ChatGPT, Claude or Grok subscription. For models in custom providers, set the context, image input and thinking levels yourself.
 
 Providers are stored in the current host's engine. On a remote host, you manage that host's providers.
 

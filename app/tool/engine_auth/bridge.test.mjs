@@ -232,6 +232,7 @@ test('open → done: browser callback, then the route is declared and list shows
     providers: [
       { id: 'openai-codex', signedIn: true, account: 'tester@example.invalid' },
       { id: 'anthropic', signedIn: false },
+      { id: 'xai', signedIn: false },
     ],
   })
   assert.equal(settings.mutations.length, 1, 'list does not re-declare an existing route')
@@ -396,16 +397,27 @@ test('describeFailure and redact', () => {
   assert.equal(redact('/opt/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js'), '/opt/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js')
 })
 
-test('device code notices map to the device phase', async () => {
-  const { bridge, authorization } = setup()
-  authorization.register('llm-pi-ai/openai-codex', async ({ notify }) => {
-    notify({ message: 'Enter this code…', url: 'https://auth.openai.com/codex/device', code: 'ABCD-1234' })
-    await new Promise(() => {})
+test('Grok device login declares its model route and signOut removes the route and grant', async () => {
+  const { bridge, authorization, credentials, settings } = setup()
+  const authorized = deferred()
+  authorization.register('llm-pi-ai/xai', async ({ notify, commit }) => {
+    notify({ message: 'Enter this code…', url: 'https://accounts.x.ai/oauth2/device', code: 'ABCD-1234' })
+    await authorized.promise
+    await commit({ kind: 'grant', payload: { type: 'oauth', access: 'fake-xai-access', refresh: 'fake-xai-refresh', expires: Date.now() + 3600000 } })
   })
-  const { attemptId } = await bridge.begin('openai-codex')
+  const { attemptId } = await bridge.begin('xai')
   const device = await waitFor(bridge, attemptId, phase('device'))
-  assert.deepEqual(device, { phase: 'device', url: 'https://auth.openai.com/codex/device', userCode: 'ABCD-1234', message: COPY.device })
-  bridge.cancel(attemptId)
+  assert.deepEqual(device, { phase: 'device', url: 'https://accounts.x.ai/oauth2/device', userCode: 'ABCD-1234', message: COPY.device })
+  assert.deepEqual(authorization.requests, [{ key: 'llm-pi-ai/xai', method: 'oauth' }])
+  assert.equal(settings.user.providers?.xai, undefined, 'no model route before authorization')
+  authorized.resolve()
+  await waitFor(bridge, attemptId, phase('done'))
+  assert.equal(credentials.records.get('llm-pi-ai/xai')?.kind, 'grant')
+  assert.deepEqual(settings.user.providers.xai, { displayName: 'Grok' })
+  assert.deepEqual((await bridge.list()).providers.find((provider) => provider.id === 'xai'), { id: 'xai', signedIn: true })
+  await bridge.signOut('xai')
+  assert.equal(credentials.records.has('llm-pi-ai/xai'), false)
+  assert.equal(settings.user.providers.xai, undefined)
 })
 
 test('signOut removes the bridge route and the grant, keeps a user API-key route and api-key records', async () => {
@@ -426,6 +438,7 @@ test('signOut removes the bridge route and the grant, keeps a user API-key route
     providers: [
       { id: 'openai-codex', signedIn: false },
       { id: 'anthropic', signedIn: false },
+      { id: 'xai', signedIn: false },
     ],
   })
 })
@@ -447,7 +460,7 @@ test('signOut leaves a route declared by a lower layer, cancels a live attempt, 
 
 test('list repairs a missing route for a stored grant and never declares one without it', async () => {
   const { bridge, credentials, settings } = setup()
-  assert.deepEqual((await bridge.list()).providers.map((p) => p.signedIn), [false, false])
+  assert.deepEqual((await bridge.list()).providers.map((p) => p.signedIn), [false, false, false])
   assert.equal(settings.mutations.length, 0)
   credentials.records.set('llm-pi-ai/anthropic', { kind: 'grant', payload: { type: 'oauth', access: 'opaque' } })
   const { providers } = await bridge.list()

@@ -1,6 +1,6 @@
 # 模型与渠道
 
-用 DeepSeek 账号或 API Key，或接入任何 OpenAI、Anthropic 兼容的服务；引擎支持时，还能用 ChatGPT、Claude 订阅登录。自定义渠道里的每个模型，上下文、识图和思考档位都可以自己设定。
+用 DeepSeek 账号或 API Key，或接入任何 OpenAI、Anthropic 兼容的服务；引擎支持时，还能用 ChatGPT、Claude、Grok 订阅登录。自定义渠道里的每个模型，上下文、识图和思考档位都可以自己设定。
 
 渠道保存在当前主机的引擎里。连接远程主机时，管理的是那台主机的渠道。
 

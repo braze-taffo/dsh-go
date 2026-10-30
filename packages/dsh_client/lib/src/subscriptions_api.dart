@@ -1,4 +1,4 @@
-/// Subscription sign-in (ChatGPT, Claude) through dsh-app's engine-side auth
+/// Subscription sign-in (ChatGPT, Claude, Grok) through dsh-app's engine-side auth
 /// bridge (`@dsh-app/auth`, service `appAuth`).
 ///
 /// DSH 0.2.1 already carries both sign-in flows: the built-in `llm-pi-ai`
@@ -26,7 +26,8 @@ import 'session_api.dart';
 /// A subscription the bridge can sign in to.
 enum Subscription {
   chatgpt('openai-codex'),
-  claude('anthropic');
+  claude('anthropic'),
+  grok('xai');
 
   const Subscription(this.wire);
 

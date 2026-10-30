@@ -38,6 +38,11 @@ export const PROVIDERS = Object.freeze({
     // redirect URI names the port it got), so a callback is always possible.
     callbackPort: undefined,
   }),
+  xai: Object.freeze({
+    displayName: 'Grok',
+    // Device-code login needs no localhost callback server.
+    callbackPort: undefined,
+  }),
 })
 
 /** Owner scope of pi-ai's credential records (`credentialKey('llm-pi-ai', id)`). */
@@ -262,7 +267,7 @@ export class AuthBridge {
 
   // ── Remote methods ──────────────────────────────────────────────────────
 
-  /** `appAuth/list`: both subscriptions, signed in or not. */
+  /** `appAuth/list`: supported subscriptions, signed in or not. */
   async list() {
     const credentials = this.#get('credentials')
     const providers = []
